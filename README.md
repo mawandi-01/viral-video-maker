@@ -1,4 +1,4 @@
-# 🔥 爆款制造机 · Viral Video Maker
+# 🔥 爆款视频制造机 · Viral Video Maker
 
 从爆款视频中发现灵感，AI 拆解配方，生成新视频脚本。
 
