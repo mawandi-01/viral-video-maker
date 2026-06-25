@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>爆款制造机</title>
+<style>
+  :root {
+    /* 抖音/豆包风格配色 */
+    --bg: #161823;              /* 深色背景 */
+    --bg-card: #1f2029;         /* 卡片背景 */
+    --bg-elevated: #25272f;     /* 弹起卡片 */
+    --bg-input: #2a2c35;        /* 输入框 */
+    --bg-hover: #303239;        /* hover */
+    --text: #ffffff;            /* 主文字 */
+    --text-2: #c9cdd4;          /* 次文字 */
+    --text-3: #8a8f99;          /* 弱文字 */
+    --border: #2a2c35;          /* 边框 */
+    --primary: #fe2c55;         /* 抖音红 */
+    --primary-2: #ff4d6d;       /* 浅红 */
+    --primary-bg: rgba(254,44,85,0.1);
+    --cyan: #25f4ee;            /* 抖音青 */
+    --cyan-bg: rgba(37,244,238,0.1);
+    --yellow: #ffb800;          /* 警告/星标 */
+    --yellow-bg: rgba(255,184,0,0.1);
+    --green: #00d67d;           /* 成功 */
+    --green-bg: rgba(0,214,125,0.1);
+    --purple: #a78bfa;
+    --purple-bg: rgba(167,139,250,0.1);
+    --blue: #4c8bf5;
+    --blue-bg: rgba(76,139,245,0.1);
+    /* 字体 */
+    --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Helvetica Neue", sans-serif;
+    /* 圆角 */
+    --r-sm: 8px;
+    --r-md: 12px;
+    --r-lg: 16px;
+    --r-xl: 20px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--font); background: var(--bg); color: var(--text);
+    font-size: 14px; line-height: 1.6; overflow: hidden;
+  }
+
+  .app { display: flex; height: 100vh; }
+
+  /* ===== 侧边栏 ===== */
+  .sidebar {
+    width: 220px; background: var(--bg-card); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; flex-shrink: 0;
+  }
+  .brand { padding: 24px 20px 20px; }
+  .brand-logo {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 18px; font-weight: 700;
+  }
+  .brand-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--primary), var(--cyan));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .brand-text {
+    background: linear-gradient(90deg, var(--primary), var(--cyan));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .brand-slogan { padding: 4px 20px 16px; font-size: 11px; color: var(--text-3); }
+
+  .nav { flex: 1; padding: 8px 12px; overflow-y: auto; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 14px; cursor: pointer; border-radius: var(--r-md);
+    color: var(--text-2); transition: all 0.2s; font-size: 14px; font-weight: 500;
+    margin-bottom: 2px; position: relative;
+  }
+  .nav-item:hover { background: var(--bg-hover); color: var(--text); }
+  .nav-item.active { background: var(--primary-bg); color: var(--primary); }
+  .nav-item.active::before {
+    content: ''; position: absolute; left: -12px; top: 50%; transform: translateY(-50%);
+    width: 3px; height: 20px; background: var(--primary); border-radius: 0 2px 2px 0;
+  }
+  .nav-emoji { font-size: 18px; width: 22px; text-align: center; }
+  .nav-badge {
+    margin-left: auto; background: var(--primary); color: white;
+    font-size: 10px; padding: 2px 6px; border-radius: 10px; min-width: 18px; text-align: center;
+  }
+
+  .side-footer { padding: 16px 20px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-3); }
+
+  /* ===== 主内容区 ===== */
+  .main { flex: 1; overflow-y: auto; padding: 0; }
+  .main-inner { max-width: 1200px; margin: 0 auto; padding: 28px 40px 60px; }
+
+  .page-head { margin-bottom: 28px; display: flex; justify-content: space-between; align-items: flex-end; }
+  .page-title { font-size: 26px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.5px; }
+  .page-desc { color: var(--text-3); font-size: 13px; }
+
+  /* ===== 卡片 ===== */
+  .card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: 24px; margin-bottom: 16px;
+  }
+  .card-head {
+    font-size: 16px; font-weight: 600; margin-bottom: 16px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+
+  /* ===== 统计卡片 ===== */
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 24px; }
+  .stat {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: 22px 20px; transition: all 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .stat::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+  }
+  .stat.s1::before { background: var(--primary); }
+  .stat.s2::before { background: var(--cyan); }
+  .stat.s3::before { background: var(--purple); }
+  .stat.s4::before { background: var(--yellow); }
+  .stat.s5::before { background: var(--green); }
+  .stat:hover { transform: translateY(-3px); border-color: var(--text-3); }
+  .stat-emoji { font-size: 24px; margin-bottom: 10px; display: block; }
+  .stat-num { font-size: 30px; font-weight: 700; margin-bottom: 2px; }
+  .stat-name { color: var(--text-3); font-size: 12px; }
+
+  /* ===== 表格 ===== */
+  .table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .table th {
+    text-align: left; padding: 10px 12px; color: var(--text-3);
+    font-weight: 500; border-bottom: 1px solid var(--border); font-size: 12px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .table td { padding: 14px 12px; border-bottom: 1px solid var(--border); }
+  .table tr:hover td { background: var(--bg-elevated); }
+  .table tr:last-child td { border-bottom: none; }
+
+  /* ===== 标签 ===== */
+  .tag {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  }
+  .tag-fire { background: var(--primary-bg); color: var(--primary); }
+  .tag-ok { background: var(--green-bg); color: var(--green); }
+  .tag-wait { background: var(--bg-hover); color: var(--text-3); }
+  .tag-blue { background: var(--blue-bg); color: var(--blue); }
+  .tag-cyan { background: var(--cyan-bg); color: var(--cyan); }
+  .tag-purple { background: var(--purple-bg); color: var(--purple); }
+  .tag-yellow { background: var(--yellow-bg); color: var(--yellow); }
+
+  /* ===== 按钮 ===== */
+  .btn {
+    padding: 10px 20px; border: none; border-radius: var(--r-sm);
+    cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 6px; font-family: var(--font);
+  }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-2); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(254,44,85,0.3); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-ghost { background: var(--bg-input); color: var(--text-2); }
+  .btn-ghost:hover { background: var(--bg-hover); color: var(--text); }
+  .btn-cyan { background: var(--cyan); color: var(--bg); }
+  .btn-cyan:hover { opacity: 0.9; }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  /* ===== 输入框 ===== */
+  .input, .select, .textarea {
+    width: 100%; padding: 12px 16px; border: 1px solid var(--border);
+    border-radius: var(--r-sm); font-size: 14px; font-family: var(--font);
+    background: var(--bg-input); color: var(--text); transition: all 0.2s;
+  }
+  .input:focus, .select:focus, .textarea:focus {
+    outline: none; border-color: var(--primary); background: var(--bg-elevated);
+  }
+  .input::placeholder { color: var(--text-3); }
+  .select { appearance: none; cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%238a8f99' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px;
+  }
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-2); font-weight: 500; }
+  .form-row { display: flex; gap: 12px; }
+  .form-row > * { flex: 1; }
+
+  /* ===== 提示 ===== */
+  .tip {
+    padding: 14px 18px; border-radius: var(--r-md); margin-bottom: 16px; font-size: 13px;
+    display: flex; align-items: flex-start; gap: 10px; border: 1px solid;
+  }
+  .tip-info { background: var(--blue-bg); color: var(--blue); border-color: rgba(76,139,245,0.2); }
+  .tip-success { background: var(--green-bg); color: var(--green); border-color: rgba(0,214,125,0.2); }
+  .tip-error { background: var(--primary-bg); color: var(--primary); border-color: rgba(254,44,85,0.2); }
+  .tip-warn { background: var(--yellow-bg); color: var(--yellow); border-color: rgba(255,184,0,0.2); }
+
+  /* ===== 模态 ===== */
+  .mask {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none;
+    justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(8px);
+  }
+  .mask.show { display: flex; }
+  .dialog {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-xl);
+    padding: 28px 32px; max-width: 680px; width: 90%; max-height: 80vh; overflow-y: auto;
+  }
+  .dialog-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .dialog-title { font-size: 18px; font-weight: 700; }
+  .dialog-x { cursor: pointer; color: var(--text-3); font-size: 24px; line-height: 1; padding: 4px; }
+  .dialog-x:hover { color: var(--text); }
+
+  /* ===== 页面 ===== */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ===== 加载 ===== */
+  .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white; border-radius: 50%; animation: rot 0.6s linear infinite; }
+  @keyframes rot { to { transform: rotate(360deg); } }
+
+  /* ===== 分镜卡片 ===== */
+  .scene {
+    border-left: 3px solid var(--primary); padding: 16px 20px; margin-bottom: 12px;
+    background: var(--bg-elevated); border-radius: 0 var(--r-md) var(--r-md) 0;
+    transition: all 0.15s;
+  }
+  .scene:hover { border-left-width: 5px; padding-left: 18px; }
+  .scene-num { font-size: 12px; color: var(--primary); font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .scene-line { margin-bottom: 6px; }
+  .scene-key { color: var(--text-3); font-size: 12px; margin-right: 6px; }
+
+  /* ===== 空状态 ===== */
+  .empty { text-align: center; padding: 60px 20px; color: var(--text-3); }
+  .empty-emoji { font-size: 48px; margin-bottom: 12px; }
+
+  /* ===== 任务 ===== */
+  .task-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 0; border-bottom: 1px solid var(--border);
+  }
+  .task-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+  .task-run { background: var(--yellow-bg); color: var(--yellow); }
+  .task-done { background: var(--green-bg); color: var(--green); }
+  .task-fail { background: var(--primary-bg); color: var(--primary); }
+
+  /* ===== 顶部 Banner ===== */
+  .banner {
+    background: linear-gradient(135deg, var(--primary) 0%, #ff6b6b 50%, var(--cyan) 100%);
+    border-radius: var(--r-xl); padding: 32px 36px; margin-bottom: 24px; color: white;
+    position: relative; overflow: hidden;
+  }
+  .banner::after {
+    content: ''; position: absolute; top: -50%; right: -10%; width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); border-radius: 50%;
+  }
+  .banner-title { font-size: 24px; font-weight: 700; margin-bottom: 6px; position: relative; z-index: 1; }
+  .banner-sub { opacity: 0.9; font-size: 14px; position: relative; z-index: 1; }
+
+  /* ===== 平台分布条 ===== */
+  .platform-bar { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .platform-bar:last-child { border-bottom: none; }
+  .platform-name { min-width: 80px; display: flex; align-items: center; gap: 6px; font-size: 13px; }
+  .platform-progress { flex: 1; height: 8px; background: var(--bg-input); border-radius: 4px; overflow: hidden; }
+  .platform-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-2)); border-radius: 4px; transition: width 0.5s; }
+  .platform-count { min-width: 50px; text-align: right; font-weight: 600; font-size: 13px; }
+
+  /* 滚动条 */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--bg-hover); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
+
+  /* 视频卡片网格（备用） */
+  .vid-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- 侧边栏 -->
+  <div class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">
+        <div class="brand-icon">🔥</div>
+        <span class="brand-text">爆款制造机</span>
+      </div>
+    </div>
+    <div class="brand-slogan">发现好内容 · 造新爆款</div>
+    <div class="nav">
+      <div class="nav-item active" data-page="dashboard"><span class="nav-emoji">📊</span> 数据概览</div>
+      <div class="nav-item" data-page="videos"><span class="nav-emoji">🎬</span> 我的视频</div>
+      <div class="nav-item" data-page="collect"><span class="nav-emoji">🔍</span> 找爆款</div>
+      <div class="nav-item" data-page="extract"><span class="nav-emoji">🧠</span> AI 拆解</div>
+      <div class="nav-item" data-page="templates"><span class="nav-emoji">💎</span> 爆款配方</div>
+      <div class="nav-item" data-page="generate"><span class="nav-emoji">✨</span> 创作新视频</div>
+      <div class="nav-item" data-page="tasks"><span class="nav-emoji">⏳</span> 任务进度</div>
+    </div>
+    <div class="side-footer">v1.0 · 仅供学习</div>
+  </div>
+
+  <!-- 主区域 -->
+  <div class="main">
+    <div class="main-inner">
+
+      <!-- ===== 数据概览 ===== -->
+      <div class="page active" id="page-dashboard">
+        <div class="banner">
+          <div class="banner-title">👋 欢迎回来！</div>
+          <div class="banner-sub">在这里发现爆款、拆解配方、创作新视频</div>
+        </div>
+        <div class="stats" id="dash-stats"></div>
+        <div class="card">
+          <div class="card-head">📈 各平台视频数</div>
+          <div id="dash-platforms"></div>
+        </div>
+        <div class="card">
+          <div class="card-head">🔥 最火的 5 个视频</div>
+          <table class="table" id="dash-top">
+            <thead><tr><th>平台</th><th>视频</th><th>标题</th><th>播放</th><th>点赞</th><th>互动率</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== 我的视频 ===== -->
+      <div class="page" id="page-videos">
+        <div class="page-head">
+          <div>
+            <div class="page-title">🎬 我的视频</div>
+            <div class="page-desc">所有采集到的视频都在这里</div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="display:flex;gap:12px;margin-bottom:16px">
+            <select class="select" id="vid-filter" style="max-width:200px">
+              <option value="">全部视频</option>
+              <option value="true">已拆解</option>
+              <option value="false">待拆解</option>
+            </select>
+            <button class="btn btn-ghost" onclick="loadVideos()">🔄 刷新</button>
+          </div>
+          <table class="table" id="vid-table">
+            <thead><tr>
+              <th>平台</th><th>视频ID</th><th>标题</th><th>作者</th><th>时长</th>
+              <th>播放</th><th>点赞</th><th>互动率</th><th>状态</th><th>操作</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== 找爆款 ===== -->
+      <div class="page" id="page-collect">
+        <div class="page-head">
+          <div>
+            <div class="page-title">🔍 找爆款</div>
+            <div class="page-desc">粘贴链接采集，或自动发现热门视频</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head">📎 粘贴视频链接</div>
+          <div class="form-group">
+            <label class="form-label">把视频链接粘到这里（支持 B站 / YouTube 等）</label>
+            <input class="input" id="col-url" placeholder="例如：https://www.bilibili.com/video/BVxxxxxx">
+          </div>
+          <button class="btn btn-primary" onclick="submitUrl()">🚀 开始采集</button>
+        </div>
+        <div class="card">
+          <div class="card-head">🔥 自动找热门</div>
+          <div class="tip tip-info">💡 系统会自动去 B站 / YouTube 拉热门榜单，筛选出爆款视频</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">选平台</label>
+              <select class="select" id="col-platform">
+                <option value="bilibili">📺 B站</option>
+                <option value="youtube">▶️ YouTube</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">找几个</label>
+              <input class="input" id="col-topn" type="number" value="5" min="1" max="50">
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="runDiscovery()">🔥 开始找</button>
+        </div>
+        <div id="col-tip"></div>
+      </div>
+
+      <!-- ===== AI 拆解 ===== -->
+      <div class="page" id="page-extract">
+        <div class="page-head">
+          <div>
+            <div class="page-title">🧠 AI 拆解</div>
+            <div class="page-desc">让 AI 分析视频为什么火，提取爆款配方</div>
+          </div>
+        </div>
+        <div class="tip tip-info">💡 点击「开始拆解」，AI 会：看画面 → 听声音转文字 → 分析文案结构 → 总结爆款配方。大约需要 5-15 分钟。</div>
+        <div class="card">
+          <div class="card-head">🎬 待拆解的视频</div>
+          <table class="table" id="ext-table">
+            <thead><tr><th>平台</th><th>视频ID</th><th>标题</th><th>播放</th><th>操作</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== 爆款配方 ===== -->
+      <div class="page" id="page-templates">
+        <div class="page-head">
+          <div>
+            <div class="page-title">💎 爆款配方</div>
+            <div class="page-desc">从爆款视频里提炼出的可复用配方</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head">💎 我的配方库</div>
+          <table class="table" id="tpl-table">
+            <thead><tr>
+              <th>配方</th><th>分类</th><th>子类</th><th>钩子手法</th>
+              <th>段数</th><th>质量分</th><th>来源</th><th>操作</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== 创作新视频 ===== -->
+      <div class="page" id="page-generate">
+        <div class="page-head">
+          <div>
+            <div class="page-title">✨ 创作新视频</div>
+            <div class="page-desc">选一个爆款配方，输入新主题，AI 帮你写新视频脚本</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">选哪个配方</label>
+              <select class="select" id="gen-tpl"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">创作方式</label>
+              <select class="select" id="gen-mode">
+                <option value="B">🔄 同类换内容（如 咖啡→奶茶）</option>
+                <option value="D">🚀 跨界大迁移（如 咖啡→理财）</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">新视频讲什么？</label>
+            <input class="input" id="gen-theme" placeholder="例如：基金理财入门 / 健身减脂 / 历史故事">
+          </div>
+          <button class="btn btn-primary" id="gen-btn" onclick="generatePrompt()">✨ 开始创作</button>
+        </div>
+        <div id="gen-out" style="display:none">
+          <div class="card">
+            <div class="card-head">📝 创作结果</div>
+            <div id="gen-result"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 任务进度 ===== -->
+      <div class="page" id="page-tasks">
+        <div class="page-head">
+          <div>
+            <div class="page-title">⏳ 任务进度</div>
+            <div class="page-desc">查看正在跑的任务</div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div style="font-size:16px;font-weight:600">任务列表</div>
+            <button class="btn btn-ghost btn-sm" onclick="loadTasks()">🔄 刷新</button>
+          </div>
+          <div id="task-list"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 弹窗 -->
+<div class="mask" id="mask">
+  <div class="dialog">
+    <div class="dialog-head">
+      <div class="dialog-title" id="dlg-title">详情</div>
+      <div class="dialog-x" onclick="closeDialog()">&times;</div>
+    </div>
+    <div id="dlg-body"></div>
+  </div>
+</div>
+
+<script>
+const API = '';
+
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.onclick = () => {
+    const p = item.dataset.page;
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    item.classList.add('active');
+    document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active'));
+    document.getElementById('page-' + p).classList.add('active');
+    onPageChange(p);
+  };
+});
+
+function onPageChange(p) {
+  if (p === 'dashboard') loadDashboard();
+  if (p === 'videos') loadVideos();
+  if (p === 'extract') loadExtractable();
+  if (p === 'templates') loadTemplates();
+  if (p === 'generate') loadTplOptions();
+  if (p === 'tasks') loadTasks();
+}
+
+function fmt(n) {
+  if (!n) return '0';
+  if (n >= 10000) return (n / 10000).toFixed(1) + 'w';
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+  return String(n);
+}
+function pct(n) { return (n * 100).toFixed(2) + '%'; }
+function short(s, n=28) { return s && s.length > n ? s.slice(0, n) + '...' : (s || ''); }
+
+async function api(path, opts = {}) {
+  const r = await fetch(API + path, { headers: {'Content-Type': 'application/json'}, ...opts });
+  if (!r.ok) {
+    const e = await r.json().catch(() => ({detail: r.statusText}));
+    throw new Error(e.detail || '出错了');
+  }
+  return r.json();
+}
+
+// 数据概览
+async function loadDashboard() {
+  try {
+    const d = await api('/api/dashboard');
+    document.getElementById('dash-stats').innerHTML = `
+      <div class="stat s1"><span class="stat-emoji">🎬</span><div class="stat-num">${d.total_videos}</div><div class="stat-name">总视频</div></div>
+      <div class="stat s2"><span class="stat-emoji">📥</span><div class="stat-num">${d.downloaded}</div><div class="stat-name">已下载</div></div>
+      <div class="stat s3"><span class="stat-emoji">🧠</span><div class="stat-num">${d.extracted}</div><div class="stat-name">已拆解</div></div>
+      <div class="stat s4"><span class="stat-emoji">🔥</span><div class="stat-num">${d.viral}</div><div class="stat-name">爆款</div></div>
+      <div class="stat s5"><span class="stat-emoji">💎</span><div class="stat-num">${d.templates}</div><div class="stat-name">配方</div></div>
+    `;
+    const total = d.by_platform.reduce((s, p) => s + p.count, 0) || 1;
+    let ph = '';
+    d.by_platform.forEach(p => {
+      const emoji = p.platform === 'bilibili' ? '📺' : p.platform === 'youtube' ? '▶️' : '📱';
+      const pctVal = (p.count / total * 100).toFixed(0);
+      ph += `<div class="platform-bar">
+        <div class="platform-name">${emoji} ${p.platform}</div>
+        <div class="platform-progress"><div class="platform-fill" style="width:${pctVal}%"></div></div>
+        <div class="platform-count">${p.count}</div>
+      </div>`;
+    });
+    document.getElementById('dash-platforms').innerHTML = ph || '<div class="empty"><div class="empty-emoji">📭</div>暂无数据</div>';
+
+    const tb = document.querySelector('#dash-top tbody');
+    if (d.top_videos.length === 0) {
+      tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-3)">还没有视频，去「找爆款」采集一些吧 🎬</td></tr>';
+    } else {
+      tb.innerHTML = d.top_videos.map(v => `
+        <tr>
+          <td><span class="tag tag-cyan">${v.platform}</span></td>
+          <td>${v.video_id}</td>
+          <td>${short(v.title, 25)}</td>
+          <td>${fmt(v.play_count)}</td>
+          <td>${fmt(v.like_count)}</td>
+          <td>${pct(v.interaction_rate)}</td>
+        </tr>`).join('');
+    }
+  } catch (e) { console.error(e); }
+}
+
+// 视频列表
+async function loadVideos() {
+  const f = document.getElementById('vid-filter').value;
+  try {
+    const d = await api('/api/videos?limit=100' + (f ? '&extracted=' + f : ''));
+    const tb = document.querySelector('#vid-table tbody');
+    if (d.videos.length === 0) {
+      tb.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text-3)">还没有视频 🎬</td></tr>';
+      return;
+    }
+    tb.innerHTML = d.videos.map(v => {
+      let tags = '';
+      if (v.is_viral) tags += '<span class="tag tag-fire">🔥爆款</span> ';
+      if (v.has_file) tags += '<span class="tag tag-ok">📥已下载</span> ';
+      else tags += '<span class="tag tag-wait">⏳未下载</span> ';
+      if (v.extracted) tags += '<span class="tag tag-purple">🧠已拆解</span>';
+      return `<tr>
+        <td><span class="tag tag-cyan">${v.platform}</span></td>
+        <td>${v.video_id}</td>
+        <td>${short(v.title, 25)}</td>
+        <td>${v.author_name || '-'}</td>
+        <td>${v.duration || 0}s</td>
+        <td>${fmt(v.play_count)}</td>
+        <td>${fmt(v.like_count)}</td>
+        <td>${pct(v.interaction_rate)}</td>
+        <td>${tags}</td>
+        <td>${v.extracted ? `<button class="btn btn-ghost btn-sm" onclick="viewFeatures('${v.platform}','${v.video_id}')">👀 查看</button>` : ''}</td>
+      </tr>`;
+    }).join('');
+  } catch (e) { console.error(e); }
+}
+document.getElementById('vid-filter').onchange = loadVideos;
+
+async function viewFeatures(platform, videoId) {
+  try {
+    const d = await api(`/api/videos/${platform}/${videoId}/features`);
+    const names = {
+      'visual_features': '🎨 画面分析',
+      'audio_features': '🎵 声音转文字',
+      'text_features': '📝 文案结构',
+      'template_features': '🧩 完整拆解'
+    };
+    let html = '';
+    ['visual_features','audio_features','text_features','template_features'].forEach(k => {
+      if (d[k]) {
+        html += `<div style="margin-bottom:20px">
+          <div style="font-weight:600;margin-bottom:10px;font-size:15px">${names[k]}</div>
+          <pre style="background:var(--bg-input);padding:14px;border-radius:8px;font-size:12px;overflow-x:auto;max-height:300px;white-space:pre-wrap;color:var(--text-2)">${JSON.stringify(d[k], null, 2)}</pre>
+        </div>`;
+      }
+    });
+    if (!html) html = '<div class="empty"><div class="empty-emoji">📭</div>还没有拆解数据</div>';
+    showDialog('👀 拆解详情 · ' + videoId, html);
+  } catch (e) { alert(e.message); }
+}
+
+// 采集
+async function submitUrl() {
+  const url = document.getElementById('col-url').value.trim();
+  if (!url) { alert('请粘贴视频链接'); return; }
+  try {
+    const r = await api('/api/submit-url', {method:'POST', body: JSON.stringify({url})});
+    showTip('col-tip', 'success', `✅ 已提交采集！平台：${r.platform}，视频ID：${r.video_id}`);
+    document.getElementById('col-url').value = '';
+  } catch (e) { showTip('col-tip', 'error', '❌ ' + e.message); }
+}
+
+async function runDiscovery() {
+  const platform = document.getElementById('col-platform').value;
+  const topN = parseInt(document.getElementById('col-topn').value);
+  try {
+    const r = await api('/api/discovery', {method:'POST', body: JSON.stringify({platforms:[platform], top_n: topN})});
+    showTip('col-tip', 'success', `🔥 开始找爆款了！去「任务进度」看进展`);
+  } catch (e) { showTip('col-tip', 'error', '❌ ' + e.message); }
+}
+
+function showTip(id, type, msg) {
+  const el = document.getElementById(id);
+  const icons = {info:'💡', success:'✅', error:'❌', warn:'⚠️'};
+  el.innerHTML = `<div class="tip tip-${type}">${icons[type]||''} ${msg}</div>`;
+  setTimeout(() => el.innerHTML = '', 6000);
+}
+
+// AI 拆解
+async function loadExtractable() {
+  try {
+    const d = await api('/api/videos?limit=100&extracted=false');
+    const tb = document.querySelector('#ext-table tbody');
+    const list = d.videos.filter(v => v.has_file);
+    if (list.length === 0) {
+      tb.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-3)">🎉 所有视频都拆解完了！</td></tr>';
+      return;
+    }
+    tb.innerHTML = list.map(v => `
+      <tr>
+        <td><span class="tag tag-cyan">${v.platform}</span></td>
+        <td>${v.video_id}</td>
+        <td>${short(v.title, 30)}</td>
+        <td>${fmt(v.play_count)}</td>
+        <td><button class="btn btn-primary btn-sm" onclick="startExtract('${v.platform}','${v.video_id}')">🧠 开始拆解</button></td>
+      </tr>`).join('');
+  } catch (e) { console.error(e); }
+}
+
+async function startExtract(platform, videoId) {
+  if (!confirm(`确认拆解这个视频？\n大约需要 5-15 分钟，请耐心等待。`)) return;
+  try {
+    const r = await api('/api/extract', {method:'POST', body: JSON.stringify({platform, video_id: videoId})});
+    alert(`✅ 拆解任务已启动！\n去「任务进度」页面看进展`);
+  } catch (e) { alert(e.message); }
+}
+
+// 配方库
+async function loadTemplates() {
+  try {
+    const d = await api('/api/templates?limit=100');
+    const tb = document.querySelector('#tpl-table tbody');
+    if (d.templates.length === 0) {
+      tb.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-3)">💎 还没有配方，先去「AI 拆解」拆几个视频</td></tr>';
+      return;
+    }
+    tb.innerHTML = d.templates.map(t => `
+      <tr>
+        <td title="${t.template_id}">${t.template_id.slice(0,8)}</td>
+        <td>${t.category ? '<span class="tag tag-yellow">'+t.category+'</span>' : '-'}</td>
+        <td>${t.sub_type || '-'}</td>
+        <td>${short(t.hook_recipe, 18)}</td>
+        <td>${t.segment_count}</td>
+        <td>${t.quality_score.toFixed(3)}</td>
+        <td>${t.source_platform}</td>
+        <td>
+          <button class="btn btn-ghost btn-sm" onclick="viewTemplate('${t.template_id}')">👀 详情</button>
+          <button class="btn btn-primary btn-sm" onclick="useTemplate('${t.template_id}')">✨ 使用</button>
+        </td>
+      </tr>`).join('');
+  } catch (e) { console.error(e); }
+}
+
+async function viewTemplate(id) {
+  try {
+    const t = await api('/api/templates/' + id);
+    const html = `<pre style="background:var(--bg-input);padding:16px;border-radius:8px;font-size:12px;overflow-x:auto;max-height:500px;white-space:pre-wrap;color:var(--text-2)">${JSON.stringify(t.template_schema, null, 2)}</pre>`;
+    showDialog('💎 配方详情', html);
+  } catch (e) { alert(e.message); }
+}
+
+function useTemplate(id) {
+  document.querySelector('.nav-item[data-page="generate"]').click();
+  setTimeout(() => { document.getElementById('gen-tpl').value = id; }, 100);
+}
+
+// 创作新视频
+async function loadTplOptions() {
+  try {
+    const d = await api('/api/templates?limit=100');
+    const sel = document.getElementById('gen-tpl');
+    if (d.templates.length === 0) {
+      sel.innerHTML = '<option value="">暂无配方，请先拆解视频</option>';
+      return;
+    }
+    sel.innerHTML = d.templates.map(t =>
+      `<option value="${t.template_id}">[${t.category || 'N/A'}] ${t.sub_type || 'N/A'} - ${t.hook_recipe.slice(0,30)} (分${t.quality_score.toFixed(2)})</option>`
+    ).join('');
+  } catch (e) { console.error(e); }
+}
+
+async function generatePrompt() {
+  const tplId = document.getElementById('gen-tpl').value;
+  const mode = document.getElementById('gen-mode').value;
+  const theme = document.getElementById('gen-theme').value.trim();
+  if (!tplId) { alert('请先选一个配方'); return; }
+  if (!theme) { alert('请输入新视频要讲什么'); return; }
+
+  const btn = document.getElementById('gen-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> AI 创作中...';
+  document.getElementById('gen-out').style.display = 'none';
+
+  try {
+    const r = await api('/api/generate-prompt', {method:'POST', body: JSON.stringify({
+      template_id: tplId, mode, theme, target_model: 'kling'
+    })});
+    if (r.success) { renderResult(r); }
+    else { alert('创作失败: ' + (r.error || '未知错误')); }
+  } catch (e) { alert(e.message); }
+  btn.disabled = false;
+  btn.innerHTML = '✨ 开始创作';
+}
+
+function renderResult(r) {
+  let html = `
+    <div style="margin-bottom:20px;padding:16px;background:var(--purple-bg);border-radius:12px;border:1px solid rgba(167,139,250,0.2)">
+      <div style="font-size:12px;color:var(--text-3);margin-bottom:4px">视频主题</div>
+      <div style="font-size:18px;font-weight:700;color:var(--purple)">${r.video_topic}</div>
+    </div>
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;color:var(--text-3);margin-bottom:6px">🎨 整体风格</div>
+      <div style="color:var(--text-2)">${r.global_prompt}</div>
+    </div>
+    <div style="font-size:14px;font-weight:600;margin-bottom:12px">🎬 分镜脚本（共 ${r.segments.length} 段）</div>`;
+  r.segments.forEach(s => {
+    html += `<div class="scene">
+      <div class="scene-num">▶ 第 ${s.index} 段 · ${s.duration} 秒</div>
+      <div class="scene-line"><span class="scene-key">🎥 镜头:</span>${s.shot}</div>
+      <div class="scene-line"><span class="scene-key">💬 台词:</span>${s.dialogue}</div>
+      <div class="scene-line"><span class="scene-key">🎬 画面:</span>${s.action}</div>
+      <div class="scene-line"><span class="scene-key">✂️ 转场:</span>${s.transition}</div>
+    </div>`;
+  });
+  document.getElementById('gen-result').innerHTML = html;
+  document.getElementById('gen-out').style.display = 'block';
+}
+
+// 任务
+async function loadTasks() {
+  try {
+    const d = await api('/api/tasks');
+    const el = document.getElementById('task-list');
+    if (d.tasks.length === 0) {
+      el.innerHTML = '<div class="empty"><div class="empty-emoji">🎉</div>没有正在跑的任务</div>';
+      return;
+    }
+    const typeNames = {submit_url:'采集视频', discovery:'找爆款', extract:'AI拆解'};
+    el.innerHTML = d.tasks.slice().reverse().map(t => `
+      <div class="task-row">
+        <div>
+          <div style="font-weight:600">${typeNames[t.type]||t.type} · ${t.task_id.slice(0,8)}</div>
+          <div style="color:var(--text-3);font-size:12px;margin-top:2px">${t.started_at} ${t.message ? '· ' + t.message : ''}</div>
+        </div>
+        <span class="task-badge task-${t.status}">${t.status==='running'?'⏳ 运行中':t.status==='success'?'✅ 完成':'❌ 失败'}</span>
+      </div>`).join('');
+  } catch (e) { console.error(e); }
+}
+
+function showDialog(title, body) {
+  document.getElementById('dlg-title').textContent = title;
+  document.getElementById('dlg-body').innerHTML = body;
+  document.getElementById('mask').classList.add('show');
+}
+function closeDialog() { document.getElementById('mask').classList.remove('show'); }
+
+loadDashboard();
+setInterval(() => {
+  if (document.getElementById('page-tasks').classList.contains('active')) loadTasks();
+}, 3000);
+</script>
+</body>
+</html>

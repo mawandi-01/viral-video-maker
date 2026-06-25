@@ -1,0 +1,9 @@
+# 抖音热门视频 URL 池
+# 每行一个 URL，# 开头的是注释
+# 来源建议：
+#   1. 打开抖音 APP → 热榜页 → 点开视频 → 分享 → 复制链接
+#   2. 浏览器访问 https://www.douyin.com/hot → 复制视频 URL
+#   3. 飞瓜/蝉妈妈免费榜单 → 复制 URL
+# 例：
+# https://www.douyin.com/video/7234567890123456
+# https://www.douyin.com/discover?modal_id=7234567890123456

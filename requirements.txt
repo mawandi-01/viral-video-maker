@@ -1,0 +1,18 @@
+yt-dlp>=2024.8.6
+rq>=1.16.2
+redis>=5.0.8
+psycopg2-binary>=2.9.9
+oss2>=2.18.4
+httpx>=0.27.0
+pydantic>=2.8.2
+loguru>=0.7.2
+python-dotenv>=1.0.1
+tenacity>=8.5.0
+# B站下载需要 curl_cffi 模拟浏览器绕过 412 反爬（yt-dlp 兼容版本：0.5.10, 0.10.x-0.13.x）
+curl_cffi>=0.5.10,<0.14
+# 音频引擎 · ASR 语音转文字（Apple Silicon 优化版 whisper）
+mlx-whisper>=0.4.0
+# 音频引擎 · ASR 语音转文字 + 情绪/音效识别（阿里达摩院，中文优化）
+funasr>=1.3.0
+modelscope>=1.10.0
+torchaudio>=2.0.0
