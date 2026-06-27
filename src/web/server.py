@@ -302,7 +302,8 @@ async def list_templates(limit: int = 50):
             cur.execute(
                 """SELECT template_id, source_platform, source_video_id,
                           template_schema, category, sub_type, quality_score, usage_count,
-                          video_type, attribution_id, created_at
+                          video_type, attribution_id, created_at,
+                          generation_count, adoption_count, avg_generated_rate, quality_score_v2
                    FROM prompt_templates
                    ORDER BY quality_score DESC LIMIT %s""",
                 (limit,),
@@ -321,6 +322,11 @@ async def list_templates(limit: int = 50):
             "content_recipe": schema.get("content_recipe", ""),
             "viral_factors": schema.get("viral_factors", []),
             "segment_count": len(schema.get("segments", [])),
+            "segments": schema.get("segments", []),
+            "generation_count": r[11] or 0,
+            "adoption_count": r[12] or 0,
+            "avg_generated_rate": float(r[13] or 0),
+            "quality_score_v2": float(r[14] or 0),
         })
     return {"total": len(templates), "templates": templates}
 

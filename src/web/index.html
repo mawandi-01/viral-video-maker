@@ -274,6 +274,67 @@
 
   /* 视频卡片网格（备用） */
   .vid-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+
+  /* ===== 配方卡片（炫酷版）===== */
+  .tpl-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 18px; margin-top: 16px;
+  }
+  .tpl-card {
+    position: relative; background: var(--bg-card);
+    border: 1px solid var(--border); border-radius: var(--r-lg);
+    padding: 20px; cursor: pointer; transition: all 0.25s ease;
+    overflow: hidden;
+  }
+  .tpl-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--purple), var(--cyan));
+    opacity: 0; transition: opacity 0.25s;
+  }
+  .tpl-card:hover {
+    transform: translateY(-4px); border-color: var(--purple);
+    box-shadow: 0 12px 32px rgba(167,139,250,0.15);
+  }
+  .tpl-card:hover::before { opacity: 1; }
+  .tpl-card:hover .tpl-hook-detail { max-height: 240px; opacity: 1; margin-top: 12px; }
+  .tpl-type-badge {
+    position: absolute; top: 14px; right: 14px;
+    padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 600;
+    background: var(--purple-bg); color: var(--purple); border: 1px solid rgba(167,139,250,0.2);
+  }
+  .tpl-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; padding-right: 60px; }
+  .tpl-subtitle { font-size: 12px; color: var(--text-3); margin-bottom: 14px; }
+  .tpl-stars { display: flex; align-items: center; gap: 4px; margin-bottom: 12px; }
+  .tpl-star { color: var(--yellow); font-size: 14px; }
+  .tpl-star-off { color: var(--bg-hover); font-size: 14px; }
+  .tpl-star-num { color: var(--text-3); font-size: 11px; margin-left: 6px; }
+  .tpl-hook-label {
+    font-size: 11px; color: var(--cyan); font-weight: 600; margin-bottom: 4px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .tpl-hook-text { font-size: 13px; color: var(--text-2); line-height: 1.6; }
+  .tpl-hook-detail {
+    max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease;
+    background: var(--bg-elevated); border-radius: var(--r-sm); padding: 0 14px;
+    font-size: 12px; color: var(--text-2); line-height: 1.7;
+  }
+  .tpl-hook-detail-title { color: var(--cyan); font-weight: 600; margin-top: 10px; margin-bottom: 4px; font-size: 11px; }
+  .tpl-factors { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .tpl-factor {
+    padding: 3px 9px; border-radius: 10px; font-size: 10px; font-weight: 500;
+    background: var(--primary-bg); color: var(--primary);
+    border: 1px solid rgba(254,44,85,0.15); white-space: nowrap;
+    max-width: 100%; overflow: hidden; text-overflow: ellipsis;
+  }
+  .tpl-stats {
+    display: flex; gap: 14px; margin-top: 14px; padding-top: 12px;
+    border-top: 1px solid var(--border); font-size: 11px;
+  }
+  .tpl-stat-item { display: flex; align-items: center; gap: 4px; color: var(--text-3); }
+  .tpl-stat-item b { color: var(--text); font-weight: 600; }
+  .tpl-actions { display: flex; gap: 8px; margin-top: 14px; }
+  .tpl-actions .btn { flex: 1; justify-content: center; }
+  .tpl-empty { text-align: center; padding: 60px 20px; color: var(--text-3); }
 </style>
 </head>
 <body>
@@ -410,24 +471,21 @@
         </div>
       </div>
 
-      <!-- ===== 爆款配方 ===== -->
+      <!-- ===== 爆款配方（炫酷卡片版）===== -->
       <div class="page" id="page-templates">
         <div class="page-head">
           <div>
             <div class="page-title">💎 爆款配方</div>
-            <div class="page-desc">从爆款视频里提炼出的可复用配方</div>
+            <div class="page-desc">从爆款视频里提炼出的可复用配方 · 悬停卡片查看完整钩子手法</div>
           </div>
         </div>
-        <div class="card">
-          <div class="card-head">💎 我的配方库</div>
-          <table class="table" id="tpl-table">
-            <thead><tr>
-              <th>配方</th><th>分类</th><th>子类</th><th>钩子手法</th>
-              <th>段数</th><th>质量分</th><th>来源</th><th>操作</th>
-            </tr></thead>
-            <tbody></tbody>
-          </table>
+        <div class="tip tip-info" style="margin-bottom:16px">
+          💡 <div>
+            <div style="font-weight:600;margin-bottom:2px">这是怎么来的？</div>
+            <div style="font-size:12px">每个配方都是 AI 把一个爆款视频拆解后提炼出来的"配方"。配方里记着这个视频用什么钩子开场、内容怎么铺、为什么能火。你可以直接拿来改造成自己的视频脚本。</div>
+          </div>
         </div>
+        <div id="tpl-grid" class="tpl-grid"></div>
       </div>
 
       <!-- ===== 创作新视频 (V2: 3场景 + 因子勾选 + 反馈) ===== -->
@@ -1171,43 +1229,145 @@ async function startExtract(platform, videoId) {
   } catch (e) { alert(e.message); }
 }
 
-// 配方库
+// 配方库 - 炫酷卡片版
 async function loadTemplates() {
   try {
     const d = await api('/api/templates?limit=100');
-    const tb = document.querySelector('#tpl-table tbody');
+    const grid = document.getElementById('tpl-grid');
     if (d.templates.length === 0) {
-      tb.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-3)">💎 还没有配方，先去「AI 拆解」拆几个视频</td></tr>';
+      grid.innerHTML = '<div class="tpl-empty" style="grid-column:1/-1"><div style="font-size:48px;margin-bottom:12px">💎</div><div>还没有配方，先去「AI 拆解」拆几个视频吧</div></div>';
       return;
     }
-    tb.innerHTML = d.templates.map(t => `
-      <tr>
-        <td title="${t.template_id}">${t.template_id.slice(0,8)}</td>
-        <td>${t.category ? '<span class="tag tag-yellow">'+t.category+'</span>' : '-'}</td>
-        <td>${t.sub_type || '-'}</td>
-        <td>${short(t.hook_recipe, 18)}</td>
-        <td>${t.segment_count}</td>
-        <td>${t.quality_score.toFixed(3)}</td>
-        <td>${t.source_platform}</td>
-        <td>
-          <button class="btn btn-ghost btn-sm" onclick="viewTemplate('${t.template_id}')">👀 详情</button>
-          <button class="btn btn-primary btn-sm" onclick="useTemplate('${t.template_id}')">✨ 使用</button>
-        </td>
-      </tr>`).join('');
+
+    grid.innerHTML = d.templates.map(t => {
+      const typeLabel = t.video_type || t.category || '通用';
+      const stars = qualityToStars(t.quality_score_v2 || t.quality_score);
+      const factors = (t.viral_factors || []).slice(0, 3);
+      const moreFactors = (t.viral_factors || []).length - 3;
+      const segCount = t.segment_count || (t.segments || []).length;
+      const genCount = t.generation_count || 0;
+      const adoptCount = t.adoption_count || 0;
+      const created = t.created_at ? new Date(t.created_at).toLocaleDateString('zh-CN', {month:'short', day:'numeric'}) : '';
+
+      return `
+        <div class="tpl-card" onclick="viewTemplate('${t.template_id}')">
+          <div class="tpl-type-badge">🏷️ ${typeLabel}</div>
+          <div class="tpl-title">${t.sub_type || '通用配方'}</div>
+          <div class="tpl-subtitle">${t.category || ''} · 提炼于 ${created}</div>
+
+          <div class="tpl-stars">
+            ${stars.html}
+            <span class="tpl-star-num">${stars.label}</span>
+          </div>
+
+          <div class="tpl-hook-label">🎣 钩子手法（怎么抓眼球）</div>
+          <div class="tpl-hook-text">${short(t.hook_recipe, 60)}</div>
+
+          <div class="tpl-hook-detail">
+            <div class="tpl-hook-detail-title">🎣 完整钩子配方</div>
+            <div>${t.hook_recipe || '暂无'}</div>
+            <div class="tpl-hook-detail-title">📝 内容配方（怎么铺内容）</div>
+            <div>${t.content_recipe || '暂无'}</div>
+            ${segCount ? `<div class="tpl-hook-detail-title">🎬 分镜数：${segCount} 段（每段约 ${Math.max(3, Math.floor(60/segCount))} 秒）</div>` : ''}
+          </div>
+
+          <div class="tpl-factors">
+            ${factors.map(f => `<span class="tpl-factor" title="${f}">${short(f, 14)}</span>`).join('')}
+            ${moreFactors > 0 ? `<span class="tpl-factor" style="background:var(--bg-hover);color:var(--text-3);border-color:var(--border)">+${moreFactors}</span>` : ''}
+          </div>
+
+          <div class="tpl-stats">
+            <span class="tpl-stat-item">🎬 <b>${segCount}</b> 分镜</span>
+            <span class="tpl-stat-item">✨ <b>${genCount}</b> 次使用</span>
+            <span class="tpl-stat-item">👍 <b>${adoptCount}</b> 采纳</span>
+            <span class="tpl-stat-item" style="margin-left:auto">📺 ${t.source_platform}</span>
+          </div>
+
+          <div class="tpl-actions" onclick="event.stopPropagation()">
+            <button class="btn btn-ghost btn-sm" onclick="viewTemplate('${t.template_id}')">👀 看详情</button>
+            <button class="btn btn-primary btn-sm" onclick="useTemplate('${t.template_id}')">✨ 用它创作</button>
+          </div>
+        </div>`;
+    }).join('');
   } catch (e) { console.error(e); }
+}
+
+// 质量分转星级展示
+function qualityToStars(score) {
+  // score 是 0-1 的小数，转成 5 星制
+  const s = Math.min(5, Math.max(0, Math.round((score || 0) * 5 * 3))); // 放大3倍因为现在分数普遍低
+  const stars = Math.min(5, Math.max(1, Math.ceil(s / 3)));
+  let html = '';
+  for (let i = 1; i <= 5; i++) {
+    html += i <= stars ? '<span class="tpl-star">★</span>' : '<span class="tpl-star-off">★</span>';
+  }
+  const labels = ['', '入门', '还行', '不错', '优秀', '神级'];
+  return { html, label: `${stars}星 · ${labels[stars]}` };
 }
 
 async function viewTemplate(id) {
   try {
     const t = await api('/api/templates/' + id);
-    const html = `<pre style="background:var(--bg-input);padding:16px;border-radius:8px;font-size:12px;overflow-x:auto;max-height:500px;white-space:pre-wrap;color:var(--text-2)">${JSON.stringify(t.template_schema, null, 2)}</pre>`;
+    const s = t.template_schema || {};
+    const segs = s.segments || [];
+    let html = `
+      <div style="margin-bottom:16px">
+        <div style="font-size:20px;font-weight:700;color:var(--purple);margin-bottom:4px">${t.sub_type || '通用配方'}</div>
+        <div style="font-size:12px;color:var(--text-3)">${t.category || ''} · 来自 ${t.source_platform} · ${segs.length} 段分镜</div>
+      </div>`;
+
+    if (s.hook_recipe) {
+      html += `<div style="margin-bottom:16px;padding:14px;background:var(--cyan-bg);border-radius:8px;border:1px solid rgba(37,244,238,0.2)">
+        <div style="font-size:12px;color:var(--cyan);font-weight:600;margin-bottom:6px">🎣 钩子配方（开头怎么抓眼球）</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7">${s.hook_recipe}</div>
+      </div>`;
+    }
+    if (s.content_recipe) {
+      html += `<div style="margin-bottom:16px;padding:14px;background:var(--purple-bg);border-radius:8px;border:1px solid rgba(167,139,250,0.2)">
+        <div style="font-size:12px;color:var(--purple);font-weight:600;margin-bottom:6px">📝 内容配方（中间怎么铺内容）</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7">${s.content_recipe}</div>
+      </div>`;
+    }
+    if (s.viral_factors && s.viral_factors.length > 0) {
+      html += `<div style="margin-bottom:16px">
+        <div style="font-size:12px;color:var(--text-3);font-weight:600;margin-bottom:8px">🔥 爆款因子（这个视频为什么能火）</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${s.viral_factors.map((f,i) => `
+            <div style="padding:8px 12px;background:var(--primary-bg);border-radius:8px;border:1px solid rgba(254,44,85,0.15);font-size:12px;color:var(--text-2)">
+              <span style="color:var(--primary);font-weight:600;margin-right:6px">${i+1}.</span>${f}
+            </div>`).join('')}
+        </div>
+      </div>`;
+    }
+    if (segs.length > 0) {
+      html += `<div style="margin-bottom:16px">
+        <div style="font-size:12px;color:var(--text-3);font-weight:600;margin-bottom:8px">🎬 分镜脚本（${segs.length} 段）</div>
+        <div style="max-height:300px;overflow-y:auto">`;
+      segs.forEach((seg, i) => {
+        html += `<div style="padding:10px 12px;background:var(--bg-elevated);border-radius:8px;margin-bottom:6px;border-left:3px solid var(--primary)">
+          <div style="font-size:11px;color:var(--primary);font-weight:600;margin-bottom:4px">第 ${i+1} 段${seg.purpose ? ' · ' + seg.purpose : ''}</div>
+          ${seg.shot ? `<div style="font-size:12px;color:var(--text-3);margin-bottom:2px">🎥 ${seg.shot}</div>` : ''}
+          ${seg.dialogue ? `<div style="font-size:12px;color:var(--text-2)">💬 ${seg.dialogue}</div>` : ''}
+        </div>`;
+      });
+      html += `</div></div>`;
+    }
+    html += `<button class="btn btn-primary" style="width:100%" onclick="closeDialog();useTemplate('${t.template_id}')">✨ 用这个配方创作</button>`;
     showDialog('💎 配方详情', html);
   } catch (e) { alert(e.message); }
 }
 
 function useTemplate(id) {
   document.querySelector('.nav-item[data-page="generate"]').click();
-  setTimeout(() => { document.getElementById('gen-tpl').value = id; }, 100);
+  setTimeout(() => {
+    // V2 三个场景的 select 都要填上
+    ['gen-tpl-1','gen-tpl-2','gen-tpl-3'].forEach(sid => {
+      const el = document.getElementById(sid);
+      if (el) el.value = id;
+    });
+    // 场景1的因子也加载
+    if (id) loadFactors(id, 'factor-list-1');
+  }, 200);
 }
 
 // 创作新视频
