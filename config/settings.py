@@ -124,7 +124,7 @@ class AIConfig:
 class ExtractConfig:
     """多模态提取引擎配置。"""
     frame_interval: int = field(default_factory=lambda: _env_int("EXTRACT_FRAME_INTERVAL", 3))
-    max_frames: int = field(default_factory=lambda: _env_int("EXTRACT_MAX_FRAMES", 60))
+    max_frames: int = field(default_factory=lambda: _env_int("EXTRACT_MAX_FRAMES", 30))
     vision_batch: int = field(default_factory=lambda: _env_int("EXTRACT_VISION_BATCH", 3))
     audio_sample_rate: int = field(default_factory=lambda: _env_int("EXTRACT_AUDIO_SAMPLE_RATE", 16000))
 

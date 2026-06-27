@@ -110,13 +110,12 @@ class BaseDownloader:
             "writeautomaticsub": False,
             "writethumbnail": True,
         }
-        # Cookie 策略：优先用 cookie 文件，没有则从 Safari 浏览器读
+        # Cookie 策略：有 cookie 文件就用，没有则不用 cookie
+        # 注意：macOS Safari cookie 需要终端有"完全磁盘访问"权限，
+        # 这里不再自动 fallback 到 cookiesfrombrowser，避免权限报错
         cookie_file = self._cookie_file()
         if cookie_file:
             opts["cookiefile"] = cookie_file
-        else:
-            # macOS Safari 直接读 cookie（需要终端有"完全磁盘访问"权限）
-            opts["cookiesfrombrowser"] = ("safari",)
 
         # B站需要 impersonate chrome 绕过 412 反爬
         if self.platform == Platform.BILIBILI:

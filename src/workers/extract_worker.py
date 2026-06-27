@@ -29,12 +29,14 @@ from src.extract.visual_engine import VisualEngine
 from src.extract.text_engine import TextEngine
 from src.extract.fusion_engine import FusionEngine
 from src.extract.template_engine import TemplateEngine
+from src.extract.attribution_engine import AttributionEngine
+from src.extract.classifier import VideoClassifier
 from src.storage.db import get_db
 from src.storage.oss_storage import get_oss
 
 
 class ExtractWorker:
-    """编排多模态提取全流程。"""
+    """编排多模态提取全流程（V2: 含归因 + 分类）。"""
 
     def __init__(self, client: Optional[ClaudeClient] = None) -> None:
         self._claude = client or ClaudeClient()
@@ -43,6 +45,8 @@ class ExtractWorker:
         self._visual = VisualEngine(client=self._claude)
         self._text = TextEngine(client=self._claude)
         self._fusion = FusionEngine(client=self._claude)
+        self._attribution = AttributionEngine(client=self._claude)
+        self._classifier = VideoClassifier(client=self._claude)
         self._template = TemplateEngine(client=self._claude)
         self._oss = get_oss()
         self._db = get_db()
@@ -88,16 +92,29 @@ class ExtractWorker:
             logger.info("[extract] step 5: fusion engine")
             template_features = self._fusion.fuse(visual_features, audio_features, text_features)
 
-            # 6. 模板抽象
-            logger.info("[extract] step 6: template engine")
-            template_schema = self._template.abstract(template_features)
+            # 6. 爆款归因（V2 新增）
+            logger.info("[extract] step 6: attribution engine")
+            attribution = self._safe_attribution(template_features)
 
-            # 7. 落库
-            logger.info("[extract] step 7: save to DB")
+            # 7. 视频类型分类（V2 新增）
+            video_type = attribution.get("video_type", "")
+            if not video_type:
+                logger.info("[extract] step 7: classifier (fallback)")
+                cls_result = self._safe_classify(visual_features, text_features, template_features)
+                video_type = cls_result.get("primary_type", "")
+
+            # 8. 模板抽象（V2: 分类抽象）
+            logger.info(f"[extract] step 8: template engine (type={video_type})")
+            template_schema = self._template.abstract(template_features, video_type=video_type)
+            template_schema["video_type"] = video_type
+
+            # 9. 落库
+            logger.info("[extract] step 9: save to DB")
+            attribution_id = self._save_attribution(platform, video_id, attribution)
             self._save_results(
                 platform, video_id,
                 visual_features, audio_features, text_features,
-                template_features, template_schema,
+                template_features, template_schema, attribution_id,
             )
 
             logger.info(f"[extract] done: {platform.value}/{video_id}")
@@ -107,7 +124,7 @@ class ExtractWorker:
             logger.error(f"[extract] failed: {e}", exc_info=True)
             return False
         finally:
-            # 8. 清理
+            # 10. 清理
             shutil.rmtree(work_dir, ignore_errors=True)
 
     def _download_from_oss(self, platform: Platform, video_id: str, work_dir: str) -> Optional[str]:
@@ -143,6 +160,54 @@ class ExtractWorker:
             "duration": result.duration,
         }
 
+    def _safe_attribution(self, template_features: dict) -> dict:
+        """跑归因，失败返回空 dict 不阻塞。"""
+        try:
+            return self._attribution.analyze(template_features)
+        except Exception as e:
+            logger.warning(f"[extract] attribution failed (non-fatal): {e}")
+            return {}
+
+    def _safe_classify(self, visual_features: dict, text_features: dict, template_features: dict = None) -> dict:
+        """跑分类，失败返回空 dict。"""
+        try:
+            return self._classifier.classify(visual_features, text_features, template_features)
+        except Exception as e:
+            logger.warning(f"[extract] classify failed (non-fatal): {e}")
+            return {"primary_type": ""}
+
+    def _save_attribution(self, platform: Platform, video_id: str, attribution: dict) -> str:
+        """保存归因结果到 viral_attributions 表。返回 attribution_id。"""
+        if not attribution:
+            return ""
+        from psycopg2.extras import Json
+        attribution_id = str(uuid4())
+        try:
+            with self._db.conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """INSERT INTO viral_attributions
+                            (attribution_id, source_video_id, source_platform,
+                             video_type, primary_factor, primary_weight,
+                             factors, critical_factors, removable_factors, migration_guide)
+                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                        (
+                            attribution_id, video_id, platform.value,
+                            attribution.get("video_type", ""),
+                            attribution.get("primary_factor", ""),
+                            float(attribution.get("primary_weight", 0)),
+                            Json(attribution.get("factors", [])),
+                            Json(attribution.get("critical_factors", [])),
+                            Json(attribution.get("removable_factors", [])),
+                            Json(attribution.get("migration_guide", {})),
+                        ),
+                    )
+            logger.info(f"[extract] saved attribution: {attribution_id}")
+            return attribution_id
+        except Exception as e:
+            logger.error(f"[extract] save attribution failed: {e}")
+            return ""
+
     def _save_results(
         self,
         platform: Platform,
@@ -152,6 +217,7 @@ class ExtractWorker:
         text_features: dict,
         template_features: dict,
         template_schema: dict,
+        attribution_id: str = "",
     ) -> None:
         """保存结果到 PG。长时间运行后连接可能失效，这里重建连接池。"""
         from psycopg2.extras import Json
@@ -207,8 +273,9 @@ class ExtractWorker:
                     cur.execute(
                         """INSERT INTO prompt_templates
                             (template_id, source_video_id, source_platform,
-                             template_schema, category, sub_type, quality_score, created_at)
-                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                             template_schema, category, sub_type, quality_score,
+                             video_type, attribution_id, created_at)
+                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                            ON CONFLICT (template_id) DO NOTHING""",
                         (
                             template_id,
@@ -218,12 +285,15 @@ class ExtractWorker:
                             category,
                             sub_type,
                             quality_score,
+                            template_schema.get("video_type", ""),
+                            attribution_id,
                             datetime.now(timezone.utc),
                         ),
                     )
             logger.info(
                 f"[extract] saved prompt_templates: id={template_id}, "
-                f"category={category}/{sub_type}, score={quality_score:.4f}"
+                f"category={category}/{sub_type}, type={template_schema.get('video_type','')}, "
+                f"score={quality_score:.4f}"
             )
         except Exception as e:
             logger.error(f"[extract] save to prompt_templates failed: {e}")

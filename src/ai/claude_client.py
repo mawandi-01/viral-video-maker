@@ -1,7 +1,7 @@
-"""AI 客户端 · 封装 CLIProxyAPI 调用 Claude。
+"""AI 客户端 · 封装 idealab API 调用。
 
-CLIProxyAPI 是本地中转站 (localhost:8317)，代理 claude-sonnet-4 等。
-- 文本对话: POST /v1/chat/completions (OpenAI 兼容格式)
+idealab 网关只支持 Anthropic 原生 /v1/messages 端点。
+- 文本对话: POST /v1/messages (Anthropic 原生格式)
 - 视觉理解: POST /v1/messages (Anthropic 原生格式 + base64 图片)
 
 两个方法:
@@ -44,7 +44,7 @@ class ClaudeClient:
         temperature: float = 0.7,
         max_tokens: int = 4096,
     ) -> str:
-        """纯文本对话。
+        """纯文本对话。统一走 /v1/messages (Anthropic 原生格式)。
 
         Args:
             prompt: 用户输入
@@ -53,25 +53,23 @@ class ClaudeClient:
             max_tokens: 最大输出 token 数
 
         Returns:
-            Claude 的回复文本
+            回复文本
         """
-        messages = [{"role": "user", "content": prompt}]
         payload = {
             "model": self._model,
-            "messages": messages,
+            "messages": [{"role": "user", "content": prompt}],
             "max_tokens": max_tokens,
-            "temperature": temperature,
         }
         if system:
             payload["system"] = system
 
-        resp = self._post("/v1/chat/completions", payload)
-        # OpenAI 兼容格式: choices[0].message.content
-        choices = resp.get("choices", [])
-        if not choices:
-            logger.warning(f"chat: empty choices, raw={resp}")
+        resp = self._post("/v1/messages", payload, anthropic=True)
+        # Anthropic 格式: content[0].text
+        content_list = resp.get("content", [])
+        if not content_list:
+            logger.warning(f"chat: empty content, raw={resp}")
             return ""
-        return choices[0].get("message", {}).get("content", "").strip()
+        return content_list[0].get("text", "").strip()
 
     def chat_json(
         self,

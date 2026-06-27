@@ -43,7 +43,7 @@ python scripts/add_extract_columns.py
 
 # 4. 启动 Web 服务
 python scripts/run_web.py
-# 浏览器打开 http://localhost:8000
+# 浏览器打开 http://localhost:8765
 ```
 
 ## 项目结构

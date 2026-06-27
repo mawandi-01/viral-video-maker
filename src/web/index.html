@@ -355,20 +355,14 @@
         <div class="page-head">
           <div>
             <div class="page-title">🔍 找爆款</div>
-            <div class="page-desc">粘贴链接采集，或自动发现热门视频</div>
+            <div class="page-desc">两种方式：自动发现热门 + 手动粘贴链接</div>
           </div>
         </div>
+
+        <!-- 板块 A: 自动发现 -->
         <div class="card">
-          <div class="card-head">📎 粘贴视频链接</div>
-          <div class="form-group">
-            <label class="form-label">把视频链接粘到这里（支持 B站 / YouTube 等）</label>
-            <input class="input" id="col-url" placeholder="例如：https://www.bilibili.com/video/BVxxxxxx">
-          </div>
-          <button class="btn btn-primary" onclick="submitUrl()">🚀 开始采集</button>
-        </div>
-        <div class="card">
-          <div class="card-head">🔥 自动找热门</div>
-          <div class="tip tip-info">💡 系统会自动去 B站 / YouTube 拉热门榜单，筛选出爆款视频</div>
+          <div class="card-head">🔥 自动发现热门 <span style="font-size:12px;color:var(--text-3);font-weight:400">（直接拉榜单，不用动手）</span></div>
+          <div class="tip tip-info">💡 系统自动去 B站 / YouTube 拉热门榜单，筛选出爆款视频</div>
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">选平台</label>
@@ -384,6 +378,17 @@
           </div>
           <button class="btn btn-primary" onclick="runDiscovery()">🔥 开始找</button>
         </div>
+
+        <!-- 板块 B: 手动提交 -->
+        <div class="card">
+          <div class="card-head">📎 手动提交链接 <span style="font-size:12px;color:var(--text-3);font-weight:400">（抖音/快手/小红书 没有公开榜单，请自己粘链接）</span></div>
+          <div class="form-group">
+            <label class="form-label">把视频链接粘到这里</label>
+            <input class="input" id="col-url" placeholder="例如：https://www.douyin.com/video/xxx 或 https://www.bilibili.com/video/BVxxx">
+          </div>
+          <button class="btn btn-primary" onclick="submitUrl()">🚀 开始采集</button>
+        </div>
+
         <div id="col-tip"></div>
       </div>
 
@@ -425,38 +430,129 @@
         </div>
       </div>
 
-      <!-- ===== 创作新视频 ===== -->
+      <!-- ===== 创作新视频 (V2: 3场景 + 因子勾选 + 反馈) ===== -->
       <div class="page" id="page-generate">
         <div class="page-head">
           <div>
             <div class="page-title">✨ 创作新视频</div>
-            <div class="page-desc">选一个爆款配方，输入新主题，AI 帮你写新视频脚本</div>
+            <div class="page-desc">选场景 → 选配方 → 勾爆款因子 → AI 生成脚本</div>
           </div>
         </div>
+
+        <!-- 场景选择 -->
         <div class="card">
-          <div class="form-row">
+          <div class="card-head">你想做什么？</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+            <div id="scene-card-1" class="scene-choice" onclick="selectScene('1')" style="background:var(--bg-elevated);border:2px solid var(--border);border-radius:12px;padding:20px;cursor:pointer;transition:all 0.2s">
+              <div style="font-size:28px;margin-bottom:8px">💡</div>
+              <div style="font-weight:600;color:var(--cyan);margin-bottom:6px">只有大方向</div>
+              <div style="font-size:12px;color:var(--text-3)">AI 帮我从零写脚本</div>
+            </div>
+            <div id="scene-card-2" class="scene-choice" onclick="selectScene('2')" style="background:var(--bg-elevated);border:2px solid var(--border);border-radius:12px;padding:20px;cursor:pointer;transition:all 0.2s">
+              <div style="font-size:28px;margin-bottom:8px">📝</div>
+              <div style="font-weight:600;color:var(--cyan);margin-bottom:6px">有完整内容</div>
+              <div style="font-size:12px;color:var(--text-3)">帮我用爆款设计包装</div>
+            </div>
+            <div id="scene-card-3" class="scene-choice" onclick="selectScene('3')" style="background:var(--bg-elevated);border:2px solid var(--border);border-radius:12px;padding:20px;cursor:pointer;transition:all 0.2s">
+              <div style="font-size:28px;margin-bottom:8px">✨</div>
+              <div style="font-weight:600;color:var(--cyan);margin-bottom:6px">有完整 prompt</div>
+              <div style="font-size:12px;color:var(--text-3)">可选加爆款因子</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 场景1表单 -->
+        <div id="scene-1-form" style="display:none">
+          <div class="card">
+            <div class="card-head">💡 场景 1 · AI 帮我写</div>
             <div class="form-group">
               <label class="form-label">选哪个配方</label>
-              <select class="select" id="gen-tpl"></select>
+              <select class="select" id="gen-tpl-1" onchange="loadFactors(this.value)"></select>
             </div>
             <div class="form-group">
-              <label class="form-label">创作方式</label>
-              <select class="select" id="gen-mode">
-                <option value="B">🔄 同类换内容（如 咖啡→奶茶）</option>
-                <option value="D">🚀 跨界大迁移（如 咖啡→理财）</option>
-              </select>
+              <label class="form-label">新视频讲什么？</label>
+              <input class="input" id="gen-theme-1" placeholder="例如：基金理财入门 / 健身减脂 / 历史故事">
+            </div>
+            <div class="form-group">
+              <label class="form-label">勾选要继承的爆款因子</label>
+              <div id="factor-list-1" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+            </div>
+            <button class="btn btn-primary" id="gen-btn-1" onclick="generatePromptV2('1')">✨ 开始创作</button>
+          </div>
+        </div>
+
+        <!-- 场景2表单 -->
+        <div id="scene-2-form" style="display:none">
+          <div class="card">
+            <div class="card-head">📝 场景 2 · 爆款设计包装</div>
+            <div class="form-group">
+              <label class="form-label">标题</label>
+              <input class="input" id="gen-title-2" placeholder="视频标题">
+            </div>
+            <div class="form-group">
+              <label class="form-label">文案/台词（完整内容）</label>
+              <textarea class="input" id="gen-content-2" rows="6" placeholder="把你写好的文案粘进来..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">想要的风格</label>
+              <input class="input" id="gen-style-2" placeholder="如：口播 / 混剪 / 科普">
+            </div>
+            <div class="form-group">
+              <label class="form-label">选参考配方（同类型）</label>
+              <select class="select" id="gen-tpl-2" onchange="loadFactors(this.value, 'factor-list-2')"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">勾选要套用的爆款设计</label>
+              <div id="factor-list-2" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+            </div>
+            <button class="btn btn-primary" id="gen-btn-2" onclick="generatePromptV2('2')">✨ 开始包装</button>
+          </div>
+        </div>
+
+        <!-- 场景3表单 -->
+        <div id="scene-3-form" style="display:none">
+          <div class="card">
+            <div class="card-head">✨ 场景 3 · 可选加爆款因子</div>
+            <div class="form-group">
+              <label class="form-label">你的完整 prompt</label>
+              <textarea class="input" id="gen-prompt-3" rows="8" placeholder="把你写好的 prompt/分镜脚本粘进来..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">视频类型（手动选）</label>
+              <select class="select" id="gen-type-3"></select>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:16px">
+              <button class="btn btn-ghost" onclick="toggleFactors3()">🎯 要加爆款因子</button>
+              <button class="btn btn-ghost" onclick="generateDirect()">🚀 不加，直接用</button>
+            </div>
+            <div id="factor-section-3" style="display:none">
+              <div class="form-group">
+                <label class="form-label">选配方（获取因子库）</label>
+                <select class="select" id="gen-tpl-3" onchange="loadFactors(this.value, 'factor-list-3')"></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">勾选要加入的爆款因子</label>
+                <div id="factor-list-3" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+              </div>
+              <button class="btn btn-primary" id="gen-btn-3" onclick="generatePromptV2('3')">✨ 增强生成</button>
             </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">新视频讲什么？</label>
-            <input class="input" id="gen-theme" placeholder="例如：基金理财入门 / 健身减脂 / 历史故事">
-          </div>
-          <button class="btn btn-primary" id="gen-btn" onclick="generatePrompt()">✨ 开始创作</button>
         </div>
+
+        <!-- 生成结果 + 反馈 -->
         <div id="gen-out" style="display:none">
           <div class="card">
             <div class="card-head">📝 创作结果</div>
             <div id="gen-result"></div>
+            <div id="gen-feedback" style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
+              <div style="font-weight:600;margin-bottom:12px">这个 prompt 好用吗？</div>
+              <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+                <button class="btn btn-ghost" onclick="submitFeedback('👍')">👍 好用</button>
+                <button class="btn btn-ghost" onclick="submitFeedback('👎')">👎 一般</button>
+                <input class="input" id="fb-url" placeholder="发布后的视频链接（选填，用于回采效果数据）" style="flex:1;min-width:250px">
+                <button class="btn btn-primary btn-sm" onclick="submitPublishedUrl()">提交发布链接</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -493,6 +589,19 @@
   </div>
 </div>
 
+<!-- ===== 拆解报告页（独立全屏） ===== -->
+<div id="report-page" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:200;overflow-y:auto">
+  <div style="max-width:680px;margin:0 auto;padding:20px">
+    <!-- 顶部导航 -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+      <button class="btn btn-ghost btn-sm" onclick="closeReport()">← 返回</button>
+      <div style="font-size:18px;font-weight:700">📊 拆解报告</div>
+    </div>
+    <div id="report-content"></div>
+  </div>
+</div>
+</div>
+
 <script>
 const API = '';
 
@@ -512,8 +621,188 @@ function onPageChange(p) {
   if (p === 'videos') loadVideos();
   if (p === 'extract') loadExtractable();
   if (p === 'templates') loadTemplates();
-  if (p === 'generate') loadTplOptions();
+  if (p === 'generate') { loadTplOptionsV2(); loadVideoTypes(); }
   if (p === 'tasks') loadTasks();
+}
+
+// ===== V2: 场景选择 =====
+let _currentScene = '';
+let _currentRecordId = '';
+
+function selectScene(s) {
+  _currentScene = s;
+  ['1','2','3'].forEach(n => {
+    document.getElementById('scene-card-'+n).style.borderColor = n===s ? 'var(--cyan)' : 'var(--border)';
+  });
+  ['1','2','3'].forEach(n => {
+    document.getElementById('scene-'+n+'-form').style.display = n===s ? 'block' : 'none';
+  });
+}
+
+async function loadVideoTypes() {
+  try {
+    const d = await api('/api/video-types');
+    const sel = document.getElementById('gen-type-3');
+    if (sel.options.length === 0) {
+      sel.innerHTML = d.types.map(t => `<option value="${t}">${t}</option>`).join('');
+    }
+  } catch(e) {}
+}
+
+async function loadTplOptionsV2() {
+  try {
+    const d = await api('/api/templates?limit=100');
+    const opts = d.templates.length === 0
+      ? '<option value="">暂无配方，请先拆解视频</option>'
+      : d.templates.map(t => `<option value="${t.template_id}">[${t.video_type||t.category||'N/A'}] ${t.sub_type||t.hook_recipe.slice(0,20)} (分${t.quality_score.toFixed(2)})</option>`).join('');
+    ['gen-tpl-1','gen-tpl-2','gen-tpl-3'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = opts;
+    });
+  } catch(e) { console.error(e); }
+}
+
+async function loadFactors(templateId, containerId='factor-list-1') {
+  if (!templateId) return;
+  try {
+    const d = await api(`/api/templates/${templateId}/attribution`);
+    const container = document.getElementById(containerId);
+    if (!d.factors || d.factors.length === 0) {
+      container.innerHTML = '<span style="color:var(--text-3);font-size:12px">暂无归因数据</span>';
+      return;
+    }
+    container.innerHTML = d.factors.map(f => `
+      <label style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg-input);border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:12px" onclick="this.querySelector('input').click()">
+        <input type="checkbox" value="${f.name}" style="display:none">
+        <span>${f.name}</span>
+        <span style="color:var(--primary);font-weight:600">${(f.weight*100).toFixed(0)}%</span>
+      </label>
+    `).join('');
+    // 给 label 加选中样式
+    container.querySelectorAll('label').forEach(lb => {
+      const cb = lb.querySelector('input');
+      cb.onchange = () => {
+        if (cb.checked) { lb.style.borderColor = 'var(--primary)'; lb.style.background = 'var(--primary-bg)'; }
+        else { lb.style.borderColor = 'var(--border)'; lb.style.background = 'var(--bg-input)'; }
+      };
+    });
+  } catch(e) {
+    document.getElementById(containerId).innerHTML = '<span style="color:var(--text-3);font-size:12px">暂无归因数据</span>';
+  }
+}
+
+function getSelectedFactors(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return [];
+  return Array.from(container.querySelectorAll('input:checked')).map(i => i.value);
+}
+
+function toggleFactors3() {
+  const sec = document.getElementById('factor-section-3');
+  sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
+}
+
+async function generatePromptV2(scene) {
+  let body = { mode: scene, target_model: 'kling', selected_factors: [], user_input: {}, template_id: '', theme: '' };
+  const btn = document.getElementById('gen-btn-'+scene);
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spin"></span> AI 创作中...'; }
+  document.getElementById('gen-out').style.display = 'none';
+
+  try {
+    if (scene === '1') {
+      body.template_id = document.getElementById('gen-tpl-1').value;
+      body.theme = document.getElementById('gen-theme-1').value.trim();
+      body.selected_factors = getSelectedFactors('factor-list-1');
+      if (!body.template_id) { alert('请先选配方'); return; }
+      if (!body.theme) { alert('请输入主题'); return; }
+    } else if (scene === '2') {
+      body.template_id = document.getElementById('gen-tpl-2').value;
+      body.user_input = {
+        title: document.getElementById('gen-title-2').value,
+        content: document.getElementById('gen-content-2').value,
+        style: document.getElementById('gen-style-2').value,
+      };
+      body.selected_factors = getSelectedFactors('factor-list-2');
+      if (!body.user_input.content) { alert('请输入文案内容'); return; }
+    } else if (scene === '3') {
+      body.user_input = { prompt: document.getElementById('gen-prompt-3').value };
+      body.video_type = document.getElementById('gen-type-3').value;
+      body.template_id = document.getElementById('gen-tpl-3').value;
+      body.selected_factors = getSelectedFactors('factor-list-3');
+      if (!body.user_input.prompt) { alert('请输入你的 prompt'); return; }
+    }
+
+    const r = await api('/api/generate-prompt', {method:'POST', body: JSON.stringify(body)});
+    if (r.success) {
+      _currentRecordId = r.record_id || '';
+      renderResultV2(r);
+    } else { alert('创作失败: ' + (r.error || '未知错误')); }
+  } catch(e) { alert(e.message); }
+  if (btn) { btn.disabled = false; btn.innerHTML = '✨ ' + (scene==='1'?'开始创作':scene==='2'?'开始包装':'增强生成'); }
+}
+
+function generateDirect() {
+  const prompt = document.getElementById('gen-prompt-3').value.trim();
+  if (!prompt) { alert('请输入你的 prompt'); return; }
+  document.getElementById('gen-result').innerHTML = `
+    <div style="margin-bottom:20px;padding:16px;background:var(--purple-bg);border-radius:12px">
+      <div style="font-size:12px;color:var(--text-3);margin-bottom:4px">视频类型</div>
+      <div style="font-weight:600">${document.getElementById('gen-type-3').value}</div>
+    </div>
+    <div style="font-size:14px;font-weight:600;margin-bottom:12px">你的 prompt（未增强）</div>
+    <div class="prompt-output">${prompt}</div>
+    <div style="margin-top:16px;color:var(--text-3);font-size:13px">💡 拿这段 prompt 去生成视频吧。如果想要增强，点「要加爆款因子」</div>
+  `;
+  document.getElementById('gen-out').style.display = 'block';
+}
+
+function renderResultV2(r) {
+  let html = `
+    <div style="margin-bottom:20px;padding:16px;background:var(--purple-bg);border-radius:12px;border:1px solid rgba(167,139,250,0.2)">
+      <div style="font-size:12px;color:var(--text-3);margin-bottom:4px">视频主题</div>
+      <div style="font-size:18px;font-weight:700;color:var(--purple)">${r.video_topic}</div>
+    </div>`;
+  if (r.global_prompt) {
+    html += `<div style="margin-bottom:20px"><div style="font-size:12px;color:var(--text-3);margin-bottom:6px">🎨 整体风格</div><div style="color:var(--text-2)">${r.global_prompt}</div></div>`;
+  }
+  if (r.used_factors && r.used_factors.length > 0) {
+    html += `<div style="margin-bottom:20px"><div style="font-size:12px;color:var(--text-3);margin-bottom:6px">继承的爆款因子</div>${r.used_factors.map(f=>`<span class="tag tag-fire">${f}</span>`).join(' ')}</div>`;
+  }
+  if (r.enhancement_notes) {
+    html += `<div style="margin-bottom:20px"><div style="font-size:12px;color:var(--text-3);margin-bottom:6px">增强说明</div><div style="color:var(--text-2);font-size:13px">${r.enhancement_notes}</div></div>`;
+  }
+  html += `<div style="font-size:14px;font-weight:600;margin-bottom:12px">🎬 分镜脚本（共 ${r.segments.length} 段）</div>`;
+  r.segments.forEach(s => {
+    html += `<div class="scene">
+      <div class="scene-num">▶ 第 ${s.index} 段 · ${s.duration} 秒</div>
+      <div class="scene-line"><span class="scene-key">🎥 镜头:</span>${s.shot}</div>
+      <div class="scene-line"><span class="scene-key">💬 台词:</span>${s.dialogue}</div>
+      <div class="scene-line"><span class="scene-key">🎬 画面:</span>${s.action}</div>
+      <div class="scene-line"><span class="scene-key">✂️ 转场:</span>${s.transition}</div>
+    </div>`;
+  });
+  document.getElementById('gen-result').innerHTML = html;
+  document.getElementById('gen-out').style.display = 'block';
+}
+
+// ===== V2: 质量闭环反馈 =====
+async function submitFeedback(fb) {
+  if (!_currentRecordId) { alert('暂无记录ID'); return; }
+  try {
+    await api('/api/feedback', {method:'POST', body: JSON.stringify({record_id: _currentRecordId, feedback: fb})});
+    alert('感谢反馈！👍');
+  } catch(e) { alert(e.message); }
+}
+
+async function submitPublishedUrl() {
+  if (!_currentRecordId) { alert('暂无记录ID'); return; }
+  const url = document.getElementById('fb-url').value.trim();
+  if (!url) { alert('请输入发布链接'); return; }
+  try {
+    await api('/api/feedback', {method:'POST', body: JSON.stringify({record_id: _currentRecordId, feedback: '👍', published_url: url})});
+    alert('已记录发布链接！系统会自动回采效果数据');
+    document.getElementById('fb-url').value = '';
+  } catch(e) { alert(e.message); }
 }
 
 function fmt(n) {
@@ -609,26 +898,221 @@ async function loadVideos() {
 document.getElementById('vid-filter').onchange = loadVideos;
 
 async function viewFeatures(platform, videoId) {
+  // V2: 打开拆解报告独立页面
+  openReport(platform, videoId);
+}
+
+// ===== V2: 拆解报告页 =====
+async function openReport(platform, videoId) {
+  document.getElementById('report-page').style.display = 'block';
+  document.getElementById('report-content').innerHTML = '<div style="text-align:center;padding:60px"><span class="spin" style="border-color:var(--border);border-top-color:var(--primary)"></div><div style="margin-top:12px;color:var(--text-3)">加载拆解报告...</div></div>';
+  document.getElementById('report-page').scrollTop = 0;
+
   try {
-    const d = await api(`/api/videos/${platform}/${videoId}/features`);
-    const names = {
-      'visual_features': '🎨 画面分析',
-      'audio_features': '🎵 声音转文字',
-      'text_features': '📝 文案结构',
-      'template_features': '🧩 完整拆解'
-    };
-    let html = '';
-    ['visual_features','audio_features','text_features','template_features'].forEach(k => {
-      if (d[k]) {
-        html += `<div style="margin-bottom:20px">
-          <div style="font-weight:600;margin-bottom:10px;font-size:15px">${names[k]}</div>
-          <pre style="background:var(--bg-input);padding:14px;border-radius:8px;font-size:12px;overflow-x:auto;max-height:300px;white-space:pre-wrap;color:var(--text-2)">${JSON.stringify(d[k], null, 2)}</pre>
-        </div>`;
-      }
+    const d = await api(`/api/videos/${platform}/${videoId}/report`);
+    renderReport(d);
+  } catch(e) {
+    document.getElementById('report-content').innerHTML = `<div class="empty"><div class="empty-emoji">❌</div>${e.message}</div>`;
+  }
+}
+
+function closeReport() {
+  document.getElementById('report-page').style.display = 'none';
+}
+
+function renderReport(d) {
+  const vi = d.video_info;
+  let html = '';
+
+  // ===== 头部：视频信息 + 封面 =====
+  html += `<div style="border-radius:16px;overflow:hidden;margin-bottom:20px;background:var(--bg-card);border:1px solid var(--border)">`;
+  if (vi.cover_url) {
+    html += `<div style="position:relative">
+      <img src="${vi.cover_url}" style="width:100%;height:200px;object-fit:cover" onerror="this.style.display='none'">
+      <div style="position:absolute;bottom:0;left:0;right:0;padding:16px;background:linear-gradient(transparent,rgba(0,0,0,0.8))">
+        <div style="font-size:18px;font-weight:700;color:white">${vi.title || vi.video_id}</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:4px">@${vi.author_name||'未知'} · ${vi.duration||0}秒 · ${fmt(vi.play_count)}播放</div>
+      </div>
+    </div>`;
+  } else {
+    html += `<div style="padding:20px">
+      <div style="font-size:18px;font-weight:700;margin-bottom:6px">${vi.title || vi.video_id}</div>
+      <div style="font-size:12px;color:var(--text-3)">@${vi.author_name||'未知'} · ${vi.duration||0}秒 · ${fmt(vi.play_count)}播放</div>
+    </div>`;
+  }
+  html += `</div>`;
+
+  // 互动数据条
+  html += `<div style="display:flex;gap:12px;margin-bottom:20px">
+    <div style="flex:1;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center">
+      <div style="font-size:20px;font-weight:700">${fmt(vi.play_count)}</div><div style="font-size:11px;color:var(--text-3)">播放</div>
+    </div>
+    <div style="flex:1;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center">
+      <div style="font-size:20px;font-weight:700">${fmt(vi.like_count)}</div><div style="font-size:11px;color:var(--text-3)">点赞</div>
+    </div>
+    <div style="flex:1;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center">
+      <div style="font-size:20px;font-weight:700">${fmt(vi.comment_count)}</div><div style="font-size:11px;color:var(--text-3)">评论</div>
+    </div>
+    <div style="flex:1;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center">
+      <div style="font-size:20px;font-weight:700;color:var(--primary)">${pct(vi.interaction_rate)}</div><div style="font-size:11px;color:var(--text-3)">互动率</div>
+    </div>
+  </div>`;
+  if (vi.is_viral) {
+    html += `<div class="tip tip-warn" style="margin-bottom:20px">🔥 这是一个爆款视频！互动率 ${pct(vi.interaction_rate)} 远超平均水平</div>`;
+  }
+
+  // ===== 类型标签 =====
+  if (d.video_type) {
+    html += `<div style="margin-bottom:20px">
+      <span class="tag tag-purple" style="font-size:14px;padding:6px 14px">🏷️ ${d.video_type}</span>
+    </div>`;
+  }
+
+  // ===== 第一部分：这个视频讲了什么 =====
+  html += `<div class="card" style="margin-bottom:16px">
+    <div class="card-head">📖 这个视频讲了什么</div>
+    <div style="font-size:15px;line-height:1.8;color:var(--text-2)">${d.content_summary || '暂无内容摘要'}</div>
+  </div>`;
+
+  // ===== 第二部分：视频是怎么展开的（时间线） =====
+  if (d.timeline && d.timeline.length > 0) {
+    html += `<div class="card" style="margin-bottom:16px">
+      <div class="card-head">🎬 视频是怎么展开的</div>`;
+
+    // 进度条可视化
+    const purposeColors = {'钩子':'var(--primary)','铺垫':'var(--text-3)','信息点':'var(--blue)','高潮':'var(--yellow)','CTA':'var(--green)'};
+    html += `<div style="display:flex;gap:2px;height:32px;border-radius:8px;overflow:hidden;margin-bottom:20px">`;
+    d.timeline.forEach(seg => {
+      const color = purposeColors[seg.purpose] || 'var(--text-3)';
+      html += `<div style="flex:1;background:${color};cursor:pointer" title="${seg.purpose||''}" onclick="document.getElementById('seg-${seg.index}').scrollIntoView({behavior:'smooth'})"></div>`;
     });
-    if (!html) html = '<div class="empty"><div class="empty-emoji">📭</div>还没有拆解数据</div>';
-    showDialog('👀 拆解详情 · ' + videoId, html);
-  } catch (e) { alert(e.message); }
+    html += `</div>`;
+
+    // 图例
+    html += `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;font-size:11px;color:var(--text-3)">`;
+    Object.entries(purposeColors).forEach(([k,v]) => {
+      html += `<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${v};margin-right:4px"></span>${k}</span>`;
+    });
+    html += `</div>`;
+
+    // 每段详情
+    d.timeline.forEach(seg => {
+      const color = purposeColors[seg.purpose] || 'var(--text-3)';
+      html += `<div id="seg-${seg.index}" style="border-left:3px solid ${color};padding:14px 16px;margin-bottom:12px;background:var(--bg-elevated);border-radius:0 12px 12px 0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-weight:600;color:${color}">第${seg.index}段 · ${seg.purpose||''}</span>
+          <span style="font-size:11px;color:var(--text-3)">${seg.time||''}</span>
+        </div>`;
+      if (seg.frame_url) {
+        html += `<img src="${seg.frame_url}" style="width:100%;max-height:160px;object-fit:cover;border-radius:8px;margin-bottom:8px" onerror="this.style.display='none'">`;
+      }
+      if (seg.shot) html += `<div style="font-size:13px;margin-bottom:4px"><span style="color:var(--text-3)">🎥</span> ${seg.shot}</div>`;
+      if (seg.dialogue) html += `<div style="font-size:13px;margin-bottom:4px"><span style="color:var(--text-3)">💬</span> ${seg.dialogue}</div>`;
+      if (seg.content_summary) html += `<div style="font-size:12px;color:var(--text-3);margin-top:6px">💡 ${seg.content_summary}</div>`;
+      html += `</div>`;
+    });
+    html += `</div>`;
+  }
+
+  // ===== 第三部分：为什么能火（核心） =====
+  if (d.attribution) {
+    const a = d.attribution;
+    const isV1 = (d.attribution_source === 'v1');
+    const accentColor = isV1 ? 'var(--blue)' : 'var(--primary)';
+    const accentBg = isV1 ? 'rgba(76,139,245,0.1)' : 'var(--primary-bg)';
+    const accentBorder = isV1 ? 'rgba(76,139,245,0.3)' : 'rgba(254,44,85,0.3)';
+    html += `<div class="card" style="margin-bottom:16px;border:1px solid ${accentBorder}">
+      <div class="card-head" style="color:${accentColor}">${isV1 ? '🧪 初步爆款因子' : '🔥 为什么能火？'}</div>`;
+
+    if (isV1) {
+      html += `<div class="tip tip-warn" style="margin-bottom:16px;font-size:12px">⚠️ 这是 V1 拆解时记录的爆款因子（未做反事实分析）。重新跑 AI 拆解可生成完整的「为什么能火 + 怎么迁移」报告。</div>`;
+    }
+
+    // 主因
+    if (a.primary_factor) {
+      html += `<div style="background:${accentBg};border:1px solid ${accentBorder};border-radius:12px;padding:16px;margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:16px;font-weight:700">${isV1 ? '⭐' : '🥇'} ${a.primary_factor}</span>
+          <span style="font-size:18px;font-weight:700;color:${accentColor}">${(a.primary_weight*100).toFixed(0)}%</span>
+        </div>
+        <div style="height:6px;background:var(--bg-input);border-radius:3px;overflow:hidden;margin-bottom:8px">
+          <div style="height:100%;width:${a.primary_weight*100}%;background:${accentColor};border-radius:3px"></div>
+        </div>`;
+      const mainFactor = (a.factors||[]).find(f => f.name === a.primary_factor);
+      if (mainFactor && mainFactor.evidence) {
+        html += `<div style="font-size:13px;color:var(--text-2)">证据：${mainFactor.evidence}</div>`;
+      }
+      html += `</div>`;
+    }
+
+    // 次要因子
+    const otherFactors = (a.factors||[]).filter(f => f.name !== a.primary_factor);
+    if (otherFactors.length > 0) {
+      html += `<div style="font-size:13px;color:var(--text-3);margin-bottom:12px">其他爆款因子：</div>`;
+      otherFactors.forEach((f, i) => {
+        const medal = i === 0 ? '🥈' : i === 1 ? '🥉' : '·';
+        html += `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:16px">${medal}</span>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:500">${f.name}</div>
+            ${f.evidence ? `<div style="font-size:12px;color:var(--text-3)">${f.evidence}</div>` : ''}
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:14px;font-weight:600;color:var(--text-2)">${(f.weight*100).toFixed(0)}%</div>
+            <div style="width:50px;height:4px;background:var(--bg-input);border-radius:2px;margin-top:4px"><div style="height:100%;width:${f.weight*100}%;background:var(--text-3);border-radius:2px"></div></div>
+          </div>
+        </div>`;
+      });
+    }
+
+    // 关键洞察
+    if (a.critical_factors && a.critical_factors.length > 0) {
+      html += `<div class="tip tip-warn" style="margin-top:16px">⚠️ <strong>关键因子</strong>（去掉就不火）：${a.critical_factors.join(' + ')}</div>`;
+    }
+    if (a.removable_factors && a.removable_factors.length > 0) {
+      html += `<div style="font-size:12px;color:var(--text-3);margin-top:8px">💡 可去掉的因子：${a.removable_factors.join('、')}</div>`;
+    }
+
+    html += `</div>`;
+
+    // ===== 第四部分：怎么用到你的视频 =====
+    if (a.migration_guide && Object.keys(a.migration_guide).length > 0) {
+      html += `<div class="card" style="margin-bottom:16px;border:1px solid rgba(37,244,238,0.2)">
+        <div class="card-head" style="color:var(--cyan)">💡 怎么用到你的视频里</div>`;
+      Object.entries(a.migration_guide).forEach(([factor, guide]) => {
+        html += `<div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+          <div style="font-weight:600;font-size:14px;margin-bottom:4px;color:var(--cyan)">🎯 ${factor}</div>
+          <div style="font-size:13px;color:var(--text-2);line-height:1.7">${guide}</div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+  } else {
+    html += `<div class="card" style="margin-bottom:16px">
+      <div class="card-head">🔥 为什么能火？</div>
+      <div class="empty"><div class="empty-emoji">⏳</div>暂无归因数据（需要跑 V2 拆解流程）</div>
+    </div>`;
+  }
+
+  // ===== 第五部分：配方 + CTA =====
+  if (d.recipe && d.recipe.template_id) {
+    const r = d.recipe;
+    html += `<div class="card" style="margin-bottom:16px;border:1px solid rgba(167,139,250,0.2)">
+      <div class="card-head" style="color:var(--purple)">💎 提炼出的配方</div>
+      <div style="margin-bottom:12px">
+        <div style="font-size:18px;font-weight:700;color:var(--purple);margin-bottom:4px">${r.sub_type || r.category || '通用配方'}</div>
+        <div style="font-size:12px;color:var(--text-3)">分类：${r.category||'N/A'} / ${r.sub_type||'N/A'}</div>
+      </div>`;
+    if (r.hook_recipe) html += `<div style="font-size:13px;margin-bottom:8px"><span style="color:var(--text-3)">钩子配方：</span>${r.hook_recipe}</div>`;
+    if (r.content_recipe) html += `<div style="font-size:13px;margin-bottom:8px"><span style="color:var(--text-3)">内容配方：</span>${r.content_recipe}</div>`;
+    if (r.viral_factors && r.viral_factors.length > 0) {
+      html += `<div style="margin-top:12px">${r.viral_factors.map(f=>`<span class="tag tag-fire">${f}</span>`).join(' ')}</div>`;
+    }
+    html += `<button class="btn btn-primary" style="width:100%;margin-top:16px" onclick="closeReport();document.querySelector('.nav-item[data-page=generate]').click();setTimeout(()=>{document.getElementById('gen-tpl-1').value='${r.template_id}';loadFactors('${r.template_id}')},200)">✨ 用这个配方创作</button>`;
+    html += `</div>`;
+  }
+
+  document.getElementById('report-content').innerHTML = html;
 }
 
 // 采集
@@ -727,66 +1211,8 @@ function useTemplate(id) {
 }
 
 // 创作新视频
-async function loadTplOptions() {
-  try {
-    const d = await api('/api/templates?limit=100');
-    const sel = document.getElementById('gen-tpl');
-    if (d.templates.length === 0) {
-      sel.innerHTML = '<option value="">暂无配方，请先拆解视频</option>';
-      return;
-    }
-    sel.innerHTML = d.templates.map(t =>
-      `<option value="${t.template_id}">[${t.category || 'N/A'}] ${t.sub_type || 'N/A'} - ${t.hook_recipe.slice(0,30)} (分${t.quality_score.toFixed(2)})</option>`
-    ).join('');
-  } catch (e) { console.error(e); }
-}
+// 旧函数已被 V2 版本替代 (loadTplOptionsV2 + generatePromptV2 + renderResultV2)
 
-async function generatePrompt() {
-  const tplId = document.getElementById('gen-tpl').value;
-  const mode = document.getElementById('gen-mode').value;
-  const theme = document.getElementById('gen-theme').value.trim();
-  if (!tplId) { alert('请先选一个配方'); return; }
-  if (!theme) { alert('请输入新视频要讲什么'); return; }
-
-  const btn = document.getElementById('gen-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spin"></span> AI 创作中...';
-  document.getElementById('gen-out').style.display = 'none';
-
-  try {
-    const r = await api('/api/generate-prompt', {method:'POST', body: JSON.stringify({
-      template_id: tplId, mode, theme, target_model: 'kling'
-    })});
-    if (r.success) { renderResult(r); }
-    else { alert('创作失败: ' + (r.error || '未知错误')); }
-  } catch (e) { alert(e.message); }
-  btn.disabled = false;
-  btn.innerHTML = '✨ 开始创作';
-}
-
-function renderResult(r) {
-  let html = `
-    <div style="margin-bottom:20px;padding:16px;background:var(--purple-bg);border-radius:12px;border:1px solid rgba(167,139,250,0.2)">
-      <div style="font-size:12px;color:var(--text-3);margin-bottom:4px">视频主题</div>
-      <div style="font-size:18px;font-weight:700;color:var(--purple)">${r.video_topic}</div>
-    </div>
-    <div style="margin-bottom:20px">
-      <div style="font-size:12px;color:var(--text-3);margin-bottom:6px">🎨 整体风格</div>
-      <div style="color:var(--text-2)">${r.global_prompt}</div>
-    </div>
-    <div style="font-size:14px;font-weight:600;margin-bottom:12px">🎬 分镜脚本（共 ${r.segments.length} 段）</div>`;
-  r.segments.forEach(s => {
-    html += `<div class="scene">
-      <div class="scene-num">▶ 第 ${s.index} 段 · ${s.duration} 秒</div>
-      <div class="scene-line"><span class="scene-key">🎥 镜头:</span>${s.shot}</div>
-      <div class="scene-line"><span class="scene-key">💬 台词:</span>${s.dialogue}</div>
-      <div class="scene-line"><span class="scene-key">🎬 画面:</span>${s.action}</div>
-      <div class="scene-line"><span class="scene-key">✂️ 转场:</span>${s.transition}</div>
-    </div>`;
-  });
-  document.getElementById('gen-result').innerHTML = html;
-  document.getElementById('gen-out').style.display = 'block';
-}
 
 // 任务
 async function loadTasks() {

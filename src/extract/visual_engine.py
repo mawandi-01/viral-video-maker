@@ -51,7 +51,7 @@ class VisualEngine:
 
     def __init__(self, client: Optional[ClaudeClient] = None) -> None:
         self._client = client or ClaudeClient()
-        self._batch_size = 3  # 每次请求带 3 张图
+        self._batch_size = 12  # 每次请求带 12 张图（减少 API 调用次数，适配限流）
 
     def analyze(self, frames: list[str]) -> dict:
         """分析关键帧列表，返回 visual_features。

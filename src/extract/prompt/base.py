@@ -48,13 +48,14 @@ class BaseGenerator:
         raise NotImplementedError
 
     def _load_template(self, template_id: str) -> Optional[dict]:
-        """从 PG 加载 template_schema + template_features。"""
+        """从 PG 加载 template_schema + template_features + attribution（V2）。"""
         with self._db.conn() as conn:
             with conn.cursor() as cur:
-                # prompt_templates 表拿 template_schema
+                # prompt_templates 表拿 template_schema + video_type + attribution_id
                 cur.execute(
                     """SELECT template_id, source_video_id, source_platform,
-                              template_schema, category, sub_type, quality_score
+                              template_schema, category, sub_type, quality_score,
+                              video_type, attribution_id
                        FROM prompt_templates WHERE template_id = %s""",
                     (template_id,),
                 )
@@ -78,6 +79,27 @@ class BaseGenerator:
                 if v_row and v_row[0]:
                     template_features = v_row[0] if isinstance(v_row[0], dict) else json.loads(v_row[0])
 
+                # V2: 加载爆款归因（如果有）
+                attribution = {}
+                attribution_id = row[8] or ""
+                if attribution_id:
+                    cur.execute(
+                        """SELECT factors, critical_factors, removable_factors,
+                                  migration_guide, primary_factor, video_type
+                           FROM viral_attributions WHERE attribution_id = %s""",
+                        (attribution_id,),
+                    )
+                    a_row = cur.fetchone()
+                    if a_row:
+                        attribution = {
+                            "factors": a_row[0] if isinstance(a_row[0], list) else json.loads(a_row[0] or "[]"),
+                            "critical_factors": a_row[1] if isinstance(a_row[1], list) else json.loads(a_row[1] or "[]"),
+                            "removable_factors": a_row[2] if isinstance(a_row[2], list) else json.loads(a_row[2] or "[]"),
+                            "migration_guide": a_row[3] if isinstance(a_row[3], dict) else json.loads(a_row[3] or "{}"),
+                            "primary_factor": a_row[4] or "",
+                            "video_type": a_row[5] or "",
+                        }
+
                 return {
                     "template_id": row[0],
                     "source_video_id": source_video_id,
@@ -87,6 +109,9 @@ class BaseGenerator:
                     "category": row[4] or "",
                     "sub_type": row[5] or "",
                     "quality_score": row[6] or 0.0,
+                    "video_type": row[7] or "",
+                    "attribution_id": attribution_id,
+                    "attribution": attribution,
                 }
 
     def _load_prompt_template(self) -> str:
